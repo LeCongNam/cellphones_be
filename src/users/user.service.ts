@@ -11,13 +11,18 @@ import {
 } from '../common/controller/BaseController.controller';
 import { UserFind } from 'src/auth/dto/user-find.dto';
 import { UserUpdateDto } from './dto/user-update.dto';
+import { Role } from './entity/role-user.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+  ) {
+    this.checkAndInitRoleUser();
+  }
 
   async findAll(params: GetParams | any) {
     const search: GetParams = {
@@ -66,6 +71,26 @@ export class UserService {
           });
       });
     });
+  }
+
+  async checkAndInitRoleUser() {
+    const roles = await this.roleRepository.find();
+    if (roles.length === 0) {
+      await this.roleRepository.save([
+        {
+          id: 1,
+          name: 'admin',
+        },
+        {
+          id: 2,
+          name: 'member',
+        },
+        {
+          id: 3,
+          name: 'orther',
+        },
+      ]);
+    }
   }
 
   async registerUser(user: UserDto) {
